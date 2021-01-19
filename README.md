@@ -1,3 +1,6 @@
+# Warning
+This builder is still in development and not ready to use to build themes
+
 # ThemeBuilder
 Shopify theme builder using ThemeKit 
 
