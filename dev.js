@@ -5,29 +5,11 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const webpack = require('webpack');
 const entries = require('./entries.webpack');
 const themeKit = require('@shopify/themekit');
-const yargs = require('yargs/yargs')
-const { hideBin } = require('yargs/helpers')
-
-let arg = yargs(hideBin(process.argv))
-    .command('new', 'upload new theme to env', (yargs) => {
-        yargs
-            .positional('port', {
-                describe: 'port to bind on',
-                default: 5000
-            })
-    }, (argv) => {
-        if (argv.verbose) console.info(`start server on :${argv.port}`)
-        serve(argv.port)
-    })
-    .option('verbose', {
-        alias: 'v',
-        type: 'boolean',
-        description: 'Run with verbose logging'
-    })
-    .argv;
-
-
-themeKit.command('version');
+const yargs = require('yargs/yargs');
+const {hideBin} = require('yargs/helpers');
+const colors = require('colors');
+const dotenv = require('dotenv');
+const env = dotenv.config()
 
 const compiler = webpack({
     mode: 'development',
@@ -64,15 +46,65 @@ const compiler = webpack({
     ]
 });
 
-const watching = compiler.watch({
-    aggregateTimeout: 300,
-    poll: undefined
-}, (err, stats) => { // [Stats Object](#stats-object)
-    if(!err)
-        console.log("Started watching");
-    //console.log(stats);
-});
-themeKit.command('watch').then(r => console.log("done"));
+let argv = yargs(hideBin(process.argv))
+    .command('new', 'upload new theme to env', (yargs) => {
+        yargs
+            .positional('port', {
+                describe: 'port to bind on',
+                default: 5000
+            })
+    }, (argv) => {
+        CreateShopifyTheme();
+    })
+    .command("watch", 'Start watching the compiler', (yargs) => {
+        // Todo
+    }, (argv) => {
+        watchCompiler(argv);
+        watchThemeKit(argv);
+    })
+    .option('environment', {
+        alias: 'env',
+        default: 'development',
+        description: 'Run the commands for a specific environment'
+    })
+    .option('tw', {
+        type: 'boolean',
+        default: false,
+        description: "Run the themekit watch command"
+    })
+    .argv;
+
+function CreateShopifyTheme() {
+    themeKit.command("new", {
+        password: process.env.store_password,
+        store: process.env.store_url,
+        name: 'ThemeBuilder theme'
+    })
+}
+
+function buildCompiler() {
+    compiler.compile((err, stats) => {
+        if (!err)
+            console.log(colors.green.bold("SUCC") + ": Files compiled")
+    })
+}
+
+function watchCompiler() {
+    const watching = compiler.watch({
+        aggregateTimeout: 300,
+        poll: undefined
+    }, (err, stats) => { // [Stats Object](#stats-object)
+        if (!err)
+            console.log(colors.green.bold("SUCC") + ": Files compiled");
+        //console.log(stats);
+    });
+}
+
+function watchThemeKit(argv) {
+    themeKit.command('watch', {
+        env: argv.env
+    });
+}
 
 // watching.close(() => {
 //     console.log('Watching Ended.');

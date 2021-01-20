@@ -19,6 +19,8 @@
   "homepage": "https://github.com/GiveMeMedia/ThemeBuilder#readme",
   "dependencies": {
     "@shopify/themekit": "^1.1.6",
+    "colors": "^1.4.0",
+    "dotenv": "^8.2.0",
     "yargs": "^16.2.0"
   },
   "devDependencies": {
