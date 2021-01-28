@@ -1,50 +1,21 @@
-#!/usr/bin/env node
-const path = require('path');
-const glob = require('glob');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+#!/usr/bin/env node-
 const webpack = require('webpack');
-const entries = require('./entries.webpack');
 const themeKit = require('@shopify/themekit');
 const yargs = require('yargs/yargs');
 const {hideBin} = require('yargs/helpers');
 const colors = require('colors');
-const dotenv = require('dotenv');
-const env = dotenv.config()
+const webpackConfig = require("./webpack.config");
+const chokidar = require('chokidar');
 
-const compiler = webpack({
-    mode: 'development',
-    cache: false,
-    context: path.resolve(__dirname, 'src'),
-    entry: entries,
-    output: {
-        path: path.resolve(__dirname, 'dist'),
-        filename: 'js/[name].js'
-    },
-    module: {
-        rules: [
-            {
-                test: /\.(scss|css)$/,
-                exclude: /node_modules/,
-                include: /style/,
-                use: [
-                    MiniCssExtractPlugin.loader,
-                    'css-loader',
-                    'postcss-loader',
-                    'sass-loader'
-                ],
-                sideEffects: true,
-            },
-        ],
-    },
-    plugins: [
-        new MiniCssExtractPlugin({
-            filename: 'style/[name].css',
-        }),
-        new webpack.BannerPlugin({
-            banner: "File created by: GiveMeMedia"
-        })
-    ]
+let watching = null;
+
+const watcher = chokidar.watch('./src', {
+    ignored: /^\./,
+    persistent: true,
+    ignoreInitial: true,
 });
+
+let compiler = webpack(webpackConfig);
 
 let argv = yargs(hideBin(process.argv))
     .command('new', 'upload new theme to env', (yargs) => {
@@ -56,21 +27,23 @@ let argv = yargs(hideBin(process.argv))
     }, (argv) => {
         CreateShopifyTheme();
     })
-    .command("watch", 'Start watching the compiler', (yargs) => {
-        // Todo
+    .option('tw', {
+        type: 'boolean',
+        default: false,
+        description: "Run the themekit watch command"
+    })
+    .command("watch", 'Start watching theme and compiler', (yargs) => {
+
     }, (argv) => {
+        console.log(colors.blue.bold('LOAD') + ': Started watching files');
         watchCompiler(argv);
-        watchThemeKit(argv);
+        if (argv.tw)
+            watchThemeKit(argv);
     })
     .option('environment', {
         alias: 'env',
         default: 'development',
         description: 'Run the commands for a specific environment'
-    })
-    .option('tw', {
-        type: 'boolean',
-        default: false,
-        description: "Run the themekit watch command"
     })
     .argv;
 
@@ -90,7 +63,7 @@ function buildCompiler() {
 }
 
 function watchCompiler() {
-    const watching = compiler.watch({
+    watching = compiler.watch({
         aggregateTimeout: 300,
         poll: undefined
     }, (err, stats) => { // [Stats Object](#stats-object)
@@ -106,6 +79,32 @@ function watchThemeKit(argv) {
     });
 }
 
-// watching.close(() => {
-//     console.log('Watching Ended.');
-// });
+function startCompiler() {
+    console.log(argv);
+}
+
+function stopCompiler() {
+    compiler = webpack(webpackConfig);
+    if(watching != null)
+        watching.close();
+}
+
+
+
+watcher
+    .on('add', function (path) {
+        stopCompiler();
+        console.log(`${colors.blue.bold("LOAD")}: File was added, restarting compiler`);
+        watchCompiler();
+    })
+    .on('unlink', function (path) {
+        stopCompiler();
+        console.log(`${colors.blue.bold("LOAD")}: File was removed, restarting compiler`);
+        watchCompiler();
+    })
+    .on('error', function (error) {
+        console.error('Error happened', error);
+    })
+
+
+
