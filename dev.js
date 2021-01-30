@@ -6,6 +6,7 @@ const {hideBin} = require('yargs/helpers');
 const colors = require('colors');
 const webpackConfig = require("./webpack.config");
 const chokidar = require('chokidar');
+require('dotenv').config()
 
 let watching = null;
 
@@ -51,8 +52,9 @@ function CreateShopifyTheme() {
     themeKit.command("new", {
         password: process.env.store_password,
         store: process.env.store_url,
-        name: 'ThemeBuilder theme'
-    })
+        name: `ThemeBuilder Theme by ${process.env.author}`,
+        dir: './theme/'
+    });
 }
 
 function buildCompiler() {

@@ -1,6 +1,5 @@
 # Idea's
 .idea
-config.yml
 
 # Logs
 logs
@@ -71,6 +70,9 @@ typings/
 
 # Yarn Integrity file
 .yarn-integrity
+
+#Config files
+config.yml
 
 # dotenv environment variables file
 .env
