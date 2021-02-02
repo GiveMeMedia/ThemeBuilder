@@ -1,5 +1,7 @@
 # Idea's
 .idea
+*/.DS_Store
+.DS_Store
 
 # Logs
 logs

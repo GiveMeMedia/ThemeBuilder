@@ -107,6 +107,3 @@ watcher
     .on('error', function (error) {
         console.error('Error happened', error);
     })
-
-
-

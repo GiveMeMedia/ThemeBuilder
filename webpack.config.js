@@ -85,11 +85,16 @@ module.exports = {
             filename: '[name].css',
         }),
         new webpack.BannerPlugin({
-            banner: "Theme created with ThemeBuilder by GiveMe.Media" +
-                "\https://github.com/GiveMeMedia/ThemeBuilder"
+            banner: "Theme created with ThemeBuilder by GiveMe.Media " +
+                "https://github.com/GiveMeMedia/ThemeBuilder"
         }),
         new FixStyleOnlyEntriesPlugin({ silent: true }),
-    ]
+    ],
+    resolve: {
+        alias: {
+            'jquery-ui': 'jquery-ui-dist/jquery-ui.js'
+        }
+    }
 };
 
 
