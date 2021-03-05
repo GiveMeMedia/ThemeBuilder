@@ -1,5 +1,5 @@
-# OurDailyBottle Theme
-Based on https://github.com/GiveMeMedia/ThemeBuilder
+## !Not ready for production!
+
 # ThemeBuilder
 Shopify theme builder using ThemeKit and Webpack
 
